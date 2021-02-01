@@ -1,0 +1,4 @@
+[servers]
+%{ for index, ip_address in ip_address ~}
+${ip_address} ansible_user=${ansible_user} ansible_ssh_common_args='-o StrictHostKeyChecking=${StrictHostKeyChecking}'
+%{ endfor ~}

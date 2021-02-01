@@ -1,0 +1,5 @@
+[nginx]
+name=nginx repo
+baseurl="https://nginx.org/packages/centos/{{ hostvars[inventory_hostname].ansible_distribution_major_version }}/{{ansible_architecture}}/"
+gpgcheck=0
+enabled=1
