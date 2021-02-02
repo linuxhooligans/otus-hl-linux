@@ -33,3 +33,6 @@ override.tf.json
 
 #Exclude sensitive vars file
 sensitive.tfvars
+
+#Exclude for current homework
+*hosts
