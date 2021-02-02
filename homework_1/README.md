@@ -14,6 +14,7 @@
 3. Создайте в директории **homework_1** файл **sensitive.tfvars**
   <pre><code> echo "accessToken = \"\" " > ./sensitive.tfvars  </code></pre>
   и введите свой *access_token*  от сервиса advancedhosting.
+
   Скопировать или создать token можно перейдя по URL https://websa.advancedhosting.com/api
 
 
