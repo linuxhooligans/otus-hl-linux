@@ -1,5 +1,5 @@
 ### WARNING use the sensitive.tfvars file to define this variable
-variable "access_token" {
+variable "accessToken" {
 }
 
 ### Cloud server config block
@@ -31,15 +31,16 @@ variable "namePublicKey" {
 }
 
 ### Ansible block
-variable "pathToAnsiblePlaybook" {
+variable "pathToAnsiblePlaybookExec" {
   default = "ansible-playbook"
 }
-variable "path_to_playbook" {
+variable "pathToPlaybook" {
   default = "./ansible/run_test_job.yml"
 }
-variable "path_to_inventory" {
+variable "pathToInventory" {
   default = "./ansible/inventories/nginx/hosts"
 }
+#Не сохранил camelCase стилистику чтобы не запутаться при генерации шаблона
 variable "ansible_user" {
   default = "adminroot"
 }

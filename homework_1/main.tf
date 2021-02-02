@@ -12,7 +12,7 @@ terraform {
 }
 
 provider "ah" {
-  access_token = var.access_token
+  access_token = var.accessToken
 }
 
 resource "ah_ssh_key" "example" {
@@ -46,12 +46,12 @@ resource "local_file" "AnsibleInventory" {
       StrictHostKeyChecking = var.StrictHostKeyChecking
     }
   )
-  filename = var.path_to_inventory
+  filename = var.pathToInventory
 }
 
 resource "null_resource" "example1" {
   provisioner "local-exec" {
-    command = "${var.pathToAnsiblePlaybook} ${var.path_to_playbook} -i ${var.path_to_inventory}"
+    command = "${var.pathToAnsiblePlaybookExec} ${var.pathToPlaybook} -i ${var.pathToInventory}"
   }
   depends_on = [
     local_file.AnsibleInventory,
