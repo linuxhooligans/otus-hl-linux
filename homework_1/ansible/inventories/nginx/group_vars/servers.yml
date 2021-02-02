@@ -1,0 +1,1 @@
+templates_source: ../templates/etc/yum.repos.d/nginx.repo.j2
