@@ -1,0 +1,7 @@
+[servers]
+%{ for index, reverse_dns in reverse_dns~}
+${reverse_dns} ansible_user=${ansible_user} private_ip=${private_ip[index]} ansible_ssh_common_args='-o StrictHostKeyChecking=${StrictHostKeyChecking}'
+%{ endfor ~}
+
+[mainserver]
+${main_server} ansible_user=${ansible_user}  ansible_ssh_common_args='-o StrictHostKeyChecking=${StrictHostKeyChecking}'

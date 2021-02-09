@@ -1,0 +1,135 @@
+---
+- name: Configure pacemaker
+  become: yes
+  block:
+    - name: Install the latest version of pacemaker and pcs from the HighAvailability repo
+      dnf:
+        name:
+          - pacemaker
+          - pcs
+          - firewalld
+          - python3-firewall
+        enablerepo: HighAvailability
+        state: present
+
+    - name: Enable service pcsd and ensure it is not masked
+      ansible.builtin.systemd:
+        name: pcsd
+        enabled: yes
+        masked: no
+
+    - name: Start service pcsd
+      ansible.builtin.systemd:
+        state: started
+        name: pcsd
+
+    - name: Change password for user hacluster
+      user:
+        name: hacluster
+        update_password: always
+        password: "{{ passwdHacluster |password_hash('sha512') }}"
+
+
+    - ansible.builtin.shell: "hostnamectl set-hostname {{ inventory_hostname }}"
+      register: result
+
+
+    - name: started service firewalld
+      systemd:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: Set firewalld ssh on public
+      ansible.posix.firewalld:
+        service: ssh
+        permanent: true
+        state: enabled
+        zone: public
+
+    - name: Set firewalld high-availability on internal
+      ansible.posix.firewalld:
+        service: high-availability
+        permanent: true
+        state: enabled
+        zone: internal
+
+    - name: Move interface eth1 on internal
+      ansible.posix.firewalld:
+        zone: internal
+        interface: eth2
+        permanent: true
+        state: enabled
+
+    - name: reload service firewalld
+      systemd:
+        name: firewalld
+        state: reloaded
+
+    # - name: add several users
+    #   user:
+    #     name: "{{ item.user }}"
+    #     state: present
+    #     groups: "{{ item.group }}"
+    #   with_items: "{{mytest}}"
+
+
+
+##firewall-cmd --zone=public --add-service=ssh --permanent
+##firewall-cmd --zone=internal --add-service=high-availability --permanent
+##firewall-cmd --zone=internal --change-interface=eth1
+
+    # - ansible.builtin.debug:
+    #     msg: "{{ inventory_hostname }}"
+
+    # - name: permit traffic in default zone for high-availability service
+    #   ansible.posix.firewalld:
+    #     service: high-availability
+    #     permanent: yes
+    #     state: enabled
+    #
+    # - name: reload service firewalld
+    #   systemd:
+    #     name: firewalld
+    #     state: reloaded
+
+
+# - name: Configure basic Cluster settings.
+#   become: yes
+#   block:
+#     - ansible.builtin.debug:
+#         msg: "{{ groups['servers'] | join(' ') }}"
+#
+#
+#     - ansible.builtin.shell: "pcs host auth {{ groups['servers'] | join(' ') }} -u hacluster -p {{ passwdHacluster }}"
+#       register: result
+#
+#     - name: Print return information from the previous task
+#       ansible.builtin.debug:
+#         msg: "{{result.stdout}} {{result.stderr}}"
+#
+#
+#     - ansible.builtin.shell: "pcs cluster setup ha_cluster {{ groups['servers'] | join(' ') }} --force"
+#       register: result
+#
+#     - name: Print return information from the previous task
+#       ansible.builtin.debug:
+#         msg: "{{result.stdout}} {{result.stderr}}"
+#
+#
+#     - ansible.builtin.shell: "pcs cluster start --all "
+#       register: result
+#
+#     - name: Print return information from the previous task
+#       ansible.builtin.debug:
+#         msg: "{{result.stdout}} {{result.stderr}}"
+#
+#
+#     - ansible.builtin.shell: "pcs cluster status"
+#       register: result
+#
+#     - name: Print return information from the previous task
+#       ansible.builtin.debug:
+#         msg: "{{result.stdout}} {{result.stderr}}"
+#
+#   when: "'mainserver' in group_names"

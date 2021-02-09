@@ -33,6 +33,10 @@ resource "ah_cloud_server" "example" {
 
 }
 
+output "example" {
+  value = ah_cloud_server.example.*
+}
+
 locals {
   ipsLocals = flatten(ah_cloud_server.example.*.ips)
 }
