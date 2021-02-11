@@ -22,7 +22,7 @@ resource "ah_ssh_key" "example" {
 
 resource "ah_cloud_server" "example" {
   count      = var.countCloudServers
-  name       = "${var.patternCloudServerName}_${count.index}"
+  name       = "${var.patternCloudServerName}-${count.index+1}.${var.patternCloudDomainName}"
   datacenter = var.datacenterCloudServer
   image      = var.imageCloudServer
   product    = var.productCloudServer
@@ -170,6 +170,13 @@ output "example6" {
 
 }
 
+
+
+output "example7" {
+
+  value = flatten(ah_cloud_server.example.*.name)
+}
+
 # variable "subnet_ids" {
 #    default = ["subnet-345325", "subnet-345243", "subnet-345234"]
 #  }
@@ -193,9 +200,9 @@ locals {
 }
 
 
- output "subnet_strings_option_one" {
-   value = local.cron
- }
+ # output "subnet_strings_option_one" {
+ #   value = local.cron
+ # }
 
 
 
@@ -220,6 +227,7 @@ resource "local_file" "AnsibleInventory" {
         ansible_user          = var.ansible_user
         StrictHostKeyChecking = var.StrictHostKeyChecking
         private_ip            = flatten(data.ah_cloud_servers.example.cloud_servers.*.private_networks).*.ip
+        server_name           = flatten(ah_cloud_server.example.*.name)
         main_server           = flatten(data.ah_cloud_servers.example.cloud_servers.*.ips).0.reverse_dns
     }
   )

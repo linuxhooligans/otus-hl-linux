@@ -10,7 +10,10 @@ variable "imageCloudServer" {
   default = "centos-8-x64"
 }
 variable "patternCloudServerName" {
-  default = "sample_server"
+  default = "cluster-server"
+}
+variable "patternCloudDomainName" {
+  default = "example.com"
 }
 variable "datacenterCloudServer" {
   default = "ams1"

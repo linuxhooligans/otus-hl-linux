@@ -3,7 +3,8 @@ countCloudServers = "3"
 imageCloudServer = "centos-8-x64"
 datacenterCloudServer = "ams1"
 productCloudServer = "start-xs"
-patternCloudServerName = "sample_server"
+patternCloudServerName = "cluster-server"
+patternCloudDomainName = "example.com"
 pathToInventoryTemplate = "inventory.tmpl"
 
 ### SSH block

@@ -30,9 +30,11 @@
         password: "{{ passwdHacluster |password_hash('sha512') }}"
 
 
-    - ansible.builtin.shell: "hostnamectl set-hostname {{ inventory_hostname }}"
-      register: result
+    # - ansible.builtin.shell: "hostnamectl set-hostname {{ inventory_hostname }}"
+    #   register: result
 
+    - ansible.builtin.shell: "hostnamectl set-hostname {{ server_name }}" 
+      register: result
 
     - name: started service firewalld
       systemd:
@@ -61,17 +63,25 @@
         permanent: true
         state: enabled
 
+    - name: Move interface eth1 on internal
+      ansible.posix.firewalld:
+        source: 10.0.0.0/24
+        permanent: true
+        zone: internal
+        state: enabled
+
     - name: reload service firewalld
       systemd:
         name: firewalld
         state: reloaded
 
-    # - name: add several users
-    #   user:
-    #     name: "{{ item.user }}"
-    #     state: present
-    #     groups: "{{ item.group }}"
-    #   with_items: "{{mytest}}"
+    - name: Add mappings to /etc/hosts
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {{ hostvars[item].private_ip }} {{ hostvars[item].server_name }}
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ hostvars[item].server_name }}"
+      loop: "{{ groups.servers }}"
 
 
 
@@ -94,42 +104,41 @@
     #     state: reloaded
 
 
-# - name: Configure basic Cluster settings.
-#   become: yes
-#   block:
-#     - ansible.builtin.debug:
-#         msg: "{{ groups['servers'] | join(' ') }}"
-#
-#
-#     - ansible.builtin.shell: "pcs host auth {{ groups['servers'] | join(' ') }} -u hacluster -p {{ passwdHacluster }}"
-#       register: result
-#
-#     - name: Print return information from the previous task
-#       ansible.builtin.debug:
-#         msg: "{{result.stdout}} {{result.stderr}}"
-#
-#
-#     - ansible.builtin.shell: "pcs cluster setup ha_cluster {{ groups['servers'] | join(' ') }} --force"
-#       register: result
-#
-#     - name: Print return information from the previous task
-#       ansible.builtin.debug:
-#         msg: "{{result.stdout}} {{result.stderr}}"
-#
-#
-#     - ansible.builtin.shell: "pcs cluster start --all "
-#       register: result
-#
-#     - name: Print return information from the previous task
-#       ansible.builtin.debug:
-#         msg: "{{result.stdout}} {{result.stderr}}"
-#
-#
-#     - ansible.builtin.shell: "pcs cluster status"
-#       register: result
-#
-#     - name: Print return information from the previous task
-#       ansible.builtin.debug:
-#         msg: "{{result.stdout}} {{result.stderr}}"
-#
-#   when: "'mainserver' in group_names"
+- name: Configure basic Cluster settings.
+  become: yes
+  block:
+
+    - name: Combine both dictionaries
+      set_fact:
+        combinePrivateServerName: "{{ combinePrivateServerName|default() }} {{ hostvars[item].server_name }}"
+      loop: "{{ groups.servers }}"
+
+
+    - ansible.builtin.debug:
+        msg: "{{ combinePrivateServerName }}"
+
+
+    - ansible.builtin.shell: "pcs host auth {{ combinePrivateServerName }} -u hacluster -p {{ passwdHacluster }}"
+
+
+
+    - ansible.builtin.shell: "pcs cluster setup ha_cluster {{ combinePrivateServerName }} --force"
+
+
+
+    - ansible.builtin.shell: "pcs cluster start --all "
+      register: result
+
+    - name: Print return information from the previous task
+      ansible.builtin.debug:
+        msg: "{{result.stdout}} {{result.stderr}}"
+
+
+    - ansible.builtin.shell: "pcs cluster status"
+      register: result
+
+    - name: Print return information from the previous task
+      ansible.builtin.debug:
+        msg: "{{result.stdout}} {{result.stderr}}"
+
+  when: "'mainserver' in group_names"
